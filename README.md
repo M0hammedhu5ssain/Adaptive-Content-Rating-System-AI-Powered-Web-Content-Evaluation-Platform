@@ -38,7 +38,7 @@ An intelligent web content rating system that evaluates websites based on sentim
 
 1. Clone the repository
 ```
-git clone https://github.com/krishnakanth6143/Adaptive-Content-Rating-System-using-AI.git
+🔗 Adaptive-Content-Rating-System-AI-Powered-Web-Content-Evaluation-Platform
 ```
 
 2. Install dependencies
