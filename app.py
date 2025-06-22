@@ -5,12 +5,15 @@ import random
 from flask import Flask, request, jsonify, session, render_template, redirect
 import openai
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
 # ✅ Set OpenRouter API Key with DeepSeek model
-openai.api_key = "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"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.api_base = "https://openrouter.ai/api/v1"
 # Set additional required headers for OpenRouter
 openai.default_headers = {
