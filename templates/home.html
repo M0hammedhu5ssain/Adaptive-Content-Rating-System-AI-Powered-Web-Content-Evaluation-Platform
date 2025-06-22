@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adaptive Content Rating System</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8b5cf6', // Changed to violet-500
+                        secondary: '#f97316', // Orange-500
+                        tertiary: '#0ea5e9', // Sky-500
+                        accent: '#ec4899', // Pink-500
+                        dark: '#111827',
+                        violet: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Smooth transitions for theme change */
+        .transition-theme {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Updated gradient animation with more violet tones */
+        .gradient-animation {
+            background: linear-gradient(-45deg, #8b5cf6, #a78bfa, #c4b5fd, #6d28d9);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Feature card hover effect */
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Animated underline for navigation */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #8b5cf6; /* violet-500 */
+            transition: width 0.3s ease;
+        }
+        
+        .dark .nav-link::after {
+            background-color: #c4b5fd; /* violet-300 */
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Updated glass container styles */
+        .glass-container {
+            background: rgba(245, 243, 255, 0.7); /* violet-50 with opacity */
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(109, 40, 217, 0.15); /* violet-700 shadow */
+            border: 1px solid rgba(196, 181, 253, 0.3); /* violet-300 border */
+            transition: all 0.3s ease;
+        }
+        
+        .dark .glass-container {
+            background: rgba(25, 15, 40, 0.7);
+            border: 1px solid rgba(167, 139, 250, 0.2); /* violet-400 border */
+        }
+        
+        .glass-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(109, 40, 217, 0.25); /* violet-700 shadow */
+        }
+        
+        /* Violet-themed animated background */
+        .animated-bg {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0) 70%); /* violet-500 */
+            top: -100px;
+            right: -100px;
+            border-radius: 50%;
+            animation: float 8s infinite ease-in-out alternate;
+        }
+        
+        .animated-bg::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(167, 139, 250, 0.5) 0%, rgba(167, 139, 250, 0) 70%); /* violet-400 */
+            bottom: -200px;
+            left: -100px;
+            border-radius: 50%;
+            animation: float 10s infinite ease-in-out alternate-reverse;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(50px, 50px) rotate(10deg); }
+        }
+        
+        /* Violet-themed container */
+        .violet-container {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(109, 40, 217, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .violet-container::before {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -75px;
+            right: -75px;
+        }
+        
+        .violet-container::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            bottom: -50px;
+            left: -50px;
+        }
+    </style>
+</head>
+<body class="bg-violet-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 transition-theme min-h-screen flex flex-col">
+    <!-- Header with Violet Theme -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md py-4 transition-theme border-b border-violet-200 dark:border-violet-900 relative z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center px-4">
+            <h1 class="text-2xl font-bold text-violet-600 dark:text-violet-400 flex items-center">
+                <span class="text-3xl mr-2">📊</span> Adaptive Content Rating
+            </h1>
+            <div class="flex items-center gap-6">
+                <a href="/home" class="nav-link text-violet-600 dark:text-violet-400 transition-theme font-medium border-b-2 border-violet-500">Home</a>
+                <a href="/search" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Search</a>
+                <a href="/dashboard" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Dashboard</a>
+                <a href="/about" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">About</a>
+                <a href="/faq" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">FAQ</a>
+                <button id="theme-toggle" class="p-2 rounded-full bg-violet-100 dark:bg-violet-900 hover:bg-violet-200 dark:hover:bg-violet-800 transition-theme">
+                    <svg id="sun-icon" class="w-5 h-5 text-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
+                    </svg>
+                    <svg id="moon-icon" class="w-5 h-5 text-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Violet Gradient -->
+    <section class="gradient-animation text-white py-24">
+        <div class="max-w-5xl mx-auto text-center px-4">
+            <div class="animate-fade-in-down">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 drop-shadow-lg">Adaptive Content Rating System</h1>
+                <p class="text-xl mb-10 max-w-3xl mx-auto opacity-90">Intelligent content recommendations based on dynamic contextual factors, personalized to your needs.</p>
+                <a href="/search" class="bg-white text-violet-600 hover:bg-gray-100 font-semibold px-8 py-4 rounded-md transition duration-300 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1">Try the Search Engine</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Violet-Themed Container Section -->
+    <section class="py-16 -mt-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="violet-container p-8 text-white">
+                <h2 class="text-3xl font-bold mb-6 text-center">Why Choose Our System?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                        <div class="text-3xl mb-4">🔮</div>
+                        <h3 class="text-xl font-semibold mb-2">Contextually Aware</h3>
+                        <p class="text-violet-100">Our system adapts to your unique context, delivering content tailored to your specific situation and needs.</p>
+                    </div>
+                    
+                    <div class="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                        <div class="text-3xl mb-4">⚡</div>
+                        <h3 class="text-xl font-semibold mb-2">Lightning Fast</h3>
+                        <p class="text-violet-100">Get instant analysis and recommendations with our optimized machine learning algorithms.</p>
+                    </div>
+                    
+                    <div class="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
+                        <div class="text-3xl mb-4">🛡️</div>
+                        <h3 class="text-xl font-semibold mb-2">Safe & Secure</h3>
+                        <p class="text-violet-100">Advanced content filtering protects you from harmful, misleading, or inappropriate online content.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Container Section with Violet-Themed Glass Effect -->
+    <section class="py-20 animated-bg relative">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-10 text-center text-violet-700 dark:text-violet-400">Contextual Analysis Technology</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Container -->
+                <div class="glass-container p-8">
+                    <h3 class="text-2xl font-semibold mb-6 text-violet-700 dark:text-violet-400">How It Works</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                        Our system analyzes content across multiple dimensions, using advanced machine learning algorithms to understand not just what content is about, but how it relates to the user's current context.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-violet-500 dark:bg-violet-600 rounded-full p-2 text-white mr-4">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-gray-100">Real-time Analysis</h4>
+                                <p class="text-gray-600 dark:text-gray-400">Content is evaluated in real-time as user context changes</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-violet-500 dark:bg-violet-600 rounded-full p-2 text-white mr-4">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-gray-100">Continuously Learning</h4>
+                                <p class="text-gray-600 dark:text-gray-400">System improves recommendations through ongoing feedback</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Container -->
+                <div class="glass-container p-8 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-6 text-violet-700 dark:text-violet-400">Content Evaluation Metrics</h3>
+                        <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                            We evaluate content across multiple dimensions to ensure quality and relevance:
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Sentiment Analysis</span>
+                            <div class="w-1/2 bg-violet-100 dark:bg-violet-900/50 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Fake News Detection</span>
+                            <div class="w-1/2 bg-violet-100 dark:bg-violet-900/50 rounded-full h-2.5">
+                                <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Clickbait Identification</span>
+                            <div class="w-1/2 bg-violet-100 dark:bg-violet-900/50 rounded-full h-2.5">
+                                <div class="bg-orange-500 h-2.5 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Content Safety</span>
+                            <div class="w-1/2 bg-violet-100 dark:bg-violet-900/50 rounded-full h-2.5">
+                                <div class="bg-red-500 h-2.5 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Abstract Section with Violet Container -->
+    <section class="py-16 bg-white dark:bg-gray-800 transition-theme">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8 text-center text-violet-700 dark:text-violet-400">Our Approach</h2>
+            <div class="glass-container p-8">
+                <p class="text-lg mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">The exponential growth of web content has made it increasingly difficult for users to find relevant and personalized information. Traditional recommendation systems, primarily based on user preferences and historical behavior, do not take into account the dynamic context in which content is consumed.</p>
+                
+                <p class="text-lg mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">Our adaptive machine learning approach to assessing the context of web content is designed to increase the accuracy of content recommendations by including real-time contextual factors. The system dynamically adjusts the impact of contextual elements such as location, device, time, and user activity, providing more individualized, timely recommendations.</p>
+                
+                <p class="text-lg mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">Through extensive experiments, we've demonstrated that our model outperforms traditional content rating systems, improving both recommendation accuracy and user satisfaction across diverse contexts. The proposed framework provides a scalable solution for integrating context awareness into content recommendation systems, impacting a wide range of applications in personalized content delivery.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section with Violet Theme -->
+    <section class="py-16 bg-violet-50 dark:bg-gray-900 transition-theme">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-violet-700 dark:text-violet-400">Key Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-theme border-t-4 border-violet-500 dark:border-violet-500">
+                    <div class="text-3xl mb-4 text-violet-500 dark:text-violet-400">📱</div>
+                    <h3 class="text-xl font-semibold mb-2">Device-Aware</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Optimizes content recommendations based on the device you're using, ensuring the best experience whether on mobile, tablet, or desktop.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-theme border-t-4 border-secondary dark:border-orange-500">
+                    <div class="text-3xl mb-4 text-secondary dark:text-orange-400">📍</div>
+                    <h3 class="text-xl font-semibold mb-2">Location-Sensitive</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Considers your geographical location to provide content that's relevant to your area and cultural context.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-theme border-t-4 border-tertiary dark:border-sky-500">
+                    <div class="text-3xl mb-4 text-tertiary dark:text-sky-400">⏰</div>
+                    <h3 class="text-xl font-semibold mb-2">Time-Contextual</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Adapts to the time of day, day of week, and seasonal factors to deliver timely content when it matters most.</p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-theme border-t-4 border-accent dark:border-pink-500">
+                    <div class="text-3xl mb-4 text-accent dark:text-pink-400">🔍</div>
+                    <h3 class="text-xl font-semibold mb-2">Content Quality Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Evaluates sentiment, fake news potential, clickbait likelihood, and content safety to ensure high-quality recommendations.</p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-theme border-t-4 border-primary dark:border-violet-500">
+                    <div class="text-3xl mb-4 text-primary dark:text-violet-400">🧠</div>
+                    <h3 class="text-xl font-semibold mb-2">Adaptive Learning</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Continuously improves recommendations based on collective and individual user feedback.</p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-theme border-t-4 border-secondary dark:border-orange-500">
+                    <div class="text-3xl mb-4 text-secondary dark:text-orange-400">🛡️</div>
+                    <h3 class="text-xl font-semibold mb-2">Privacy-Focused</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Respects user privacy while still delivering personalized experiences through advanced anonymization techniques.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section with Violet Gradient -->
+    <section class="py-16 bg-gradient-to-r from-violet-600 to-violet-900 dark:from-violet-800 dark:to-violet-900 text-white text-center transition-theme">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-4">Experience Smarter Content Discovery</h2>
+            <p class="text-xl mb-8">Try our AI-powered search engine to find relevant, high-quality web content tailored to your context.</p>
+            <a href="/search" class="bg-white text-violet-700 hover:bg-gray-100 font-semibold px-8 py-4 rounded-md transition duration-300 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1">Start Searching</a>
+        </div>
+    </section>
+
+    <!-- Footer with Violet Accents and updated links -->
+    <footer class="bg-white dark:bg-gray-800 py-8 text-center text-gray-600 dark:text-gray-400 transition-theme border-t border-violet-200 dark:border-violet-900">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-wrap justify-center gap-6 mb-6">
+                <a href="/home" class="hover:text-violet-600 dark:hover:text-violet-400 transition-theme">Home</a>
+                <a href="/search" class="hover:text-violet-600 dark:hover:text-violet-400 transition-theme">Search</a>
+                <a href="/dashboard" class="hover:text-violet-600 dark:hover:text-violet-400 transition-theme">Dashboard</a>
+                <a href="/about" class="hover:text-violet-600 dark:hover:text-violet-400 transition-theme">About</a>
+                <a href="/faq" class="hover:text-violet-600 dark:hover:text-violet-400 transition-theme">FAQ</a>
+            </div>
+            <p>© 2025 Adaptive Content Rating System. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Theme handling
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById("theme-toggle");
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener("click", function() {
+            htmlElement.classList.toggle("dark");
+            
+            // Save theme preference
+            if (htmlElement.classList.contains("dark")) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+</body>
+</html>

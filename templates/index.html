@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Website Search</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8b5cf6', // Violet-500
+                        secondary: '#f97316', // Orange-500
+                        tertiary: '#10b981', // Emerald-500
+                        accent: '#ec4899', // Pink-500
+                        dark: '#111827',
+                        violet: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Custom loading animation */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(79, 70, 229, 0.2);
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .dark .spinner {
+            border: 4px solid rgba(129, 140, 248, 0.2);
+            border-top: 4px solid #818cf8;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hover effect for result cards */
+        .result-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .dark .result-card:hover {
+            border-left: 4px solid #818cf8;
+        }
+
+        /* Stylish recent search buttons */
+        .recent-search {
+            transition: all 0.3s ease;
+        }
+        
+        .recent-search:hover {
+            background-color: #c7d2fe;
+            transform: translateY(-2px);
+        }
+        
+        .dark .recent-search:hover {
+            background-color: #4f46e5;
+        }
+        
+        /* Smooth transitions for theme change */
+        .transition-theme {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Animated underline for navigation */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #4f46e5;
+            transition: width 0.3s ease;
+        }
+        
+        .dark .nav-link::after {
+            background-color: #818cf8;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Animated score bars */
+        .score-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .dark .score-bar {
+            background-color: #374151;
+        }
+        
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-out;
+        }
+
+        /* Enhanced result cards with glass effect */
+        .result-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .dark .result-card {
+            background: rgba(31, 41, 55, 0.8);
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(124, 58, 237, 0.2);
+            border-left-color: #8b5cf6;
+        }
+        
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #8b5cf6;
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
+        }
+        
+        .result-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        /* Animated score bars with glow */
+        .score-bar {
+            height: 10px;
+            background-color: rgba(245, 243, 255, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .score-bar {
+            background-color: rgba(76, 29, 149, 0.2);
+        }
+        
+        .score-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .score-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Animated background */
+        .search-hero {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .search-hero::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0) 70%);
+            top: -150px;
+            right: -100px;
+            border-radius: 50%;
+            animation: float 15s infinite alternate ease-in-out;
+            z-index: 0;
+        }
+        
+        .search-hero::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(236, 72, 153, 0) 70%);
+            bottom: -100px;
+            left: -50px;
+            border-radius: 50%;
+            animation: float 20s infinite alternate-reverse ease-in-out;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+        
+        /* Typing animation for search input */
+        @keyframes cursor-blink {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .search-input-focus::after {
+            content: '|';
+            margin-left: 2px;
+            animation: cursor-blink 1.2s infinite;
+        }
+        
+        /* New search history chips */
+        .history-chip {
+            transition: all 0.3s ease;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        
+        .dark .history-chip {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .history-chip:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .dark .history-chip:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-violet-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 transition-theme min-h-screen flex flex-col">
+    <!-- Header with violet accents -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md py-4 transition-theme border-b border-violet-200 dark:border-violet-900">
+        <div class="max-w-5xl mx-auto flex justify-between items-center px-4">
+            <h1 class="text-2xl font-bold text-violet-600 dark:text-violet-400 flex items-center">
+                <span class="text-3xl mr-2">🔍</span> AI Website Search
+            </h1>
+            <div class="flex items-center gap-6">
+                <a href="/home" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Home</a>
+                <a href="/search" class="nav-link text-violet-600 dark:text-violet-400 transition-theme font-medium border-b-2 border-violet-500">Search</a>
+                <a href="/dashboard" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Dashboard</a>
+                <a href="/about" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">About</a>
+                <a href="/faq" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">FAQ</a>
+                <button id="theme-toggle" class="p-2 rounded-full bg-violet-100 dark:bg-violet-900 hover:bg-violet-200 dark:hover:bg-violet-800 transition-theme">
+                    <svg id="sun-icon" class="w-5 h-5 text-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
+                    </svg>
+                    <svg id="moon-icon" class="w-5 h-5 text-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Enhanced Search Hero Section -->
+    <section class="search-hero bg-white dark:bg-gray-800 py-16 relative">
+        <div class="max-w-5xl mx-auto px-4 text-center relative z-10">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 text-violet-700 dark:text-violet-400">Discover Quality Websites</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">Our AI analyzes web content for quality, safety, and relevance to help you find the best websites.</p>
+            
+            <!-- Enhanced Search Box -->
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl p-8 transition-theme border border-violet-100 dark:border-violet-900 relative z-10">
+                    <form id="search-form" class="space-y-4">
+                        <div class="relative">
+                            <input type="text" id="search-input" placeholder="Search for any website or topic..."
+                                class="w-full p-4 pl-12 border border-violet-200 dark:border-violet-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 dark:focus:ring-violet-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-theme shadow-sm text-lg"
+                                autocomplete="off">
+                            <svg class="w-6 h-6 text-violet-400 absolute left-3 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-violet-600 hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-700 text-white font-semibold py-4 rounded-lg transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-lg">
+                            Search
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Recent Searches Section -->
+                <div id="recent-searches" class="mt-4 flex flex-wrap gap-2 justify-center">
+                    <!-- Dynamic content will be added here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Spinner with Improved Visual -->
+    <div id="loading" class="hidden max-w-5xl mx-auto mt-8 px-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-md flex flex-col items-center border border-violet-100 dark:border-violet-900">
+            <div class="spinner mb-4 w-10 h-10 border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 dark:border-t-violet-500"></div>
+            <p class="text-gray-600 dark:text-gray-400 animate-pulse text-lg">Finding the best websites for you...</p>
+            <div class="mt-4 w-full bg-violet-100 dark:bg-violet-900/30 h-1.5 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-violet-600 dark:bg-violet-500 rounded-full" style="width: 0%; transition: width 2s ease;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results with Improved Cards -->
+    <section id="results-section" class="max-w-5xl mx-auto mt-8 px-4 hidden">
+        <h2 class="text-2xl font-bold mb-6 dark:text-gray-200 flex items-center">
+            <span class="text-2xl mr-2">🔍</span> Search Results
+        </h2>
+        <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </section>
+
+    <!-- Content Analysis with Improved Visuals -->
+    <section id="analysis-section" class="max-w-5xl mx-auto mt-12 px-4 hidden">
+        <h2 class="text-2xl font-bold mb-6 dark:text-gray-200 flex items-center">
+            <span class="text-2xl mr-2">📊</span> Content Analysis
+        </h2>
+        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 transition-theme border border-violet-100 dark:border-violet-900">
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Our AI has analyzed the content quality and safety for this search topic:</p>
+            <div class="grid grid-cols-1 gap-8">
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3 p-2 bg-green-100 dark:bg-green-900/30 rounded-full">😊</span>
+                            <p class="font-medium text-lg dark:text-gray-300">Sentiment Analysis</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="sentiment-score" class="font-bold text-lg text-violet-600 dark:text-violet-400 mr-2">-</span>
+                            <span id="sentiment-rating" class="text-sm px-2 py-1 rounded-full"></span>
+                        </div>
+                    </div>
+                    <div class="score-bar">
+                        <div id="sentiment-bar" class="score-fill bg-green-500" style="width: 0%"></div>
+                    </div>
+                    <p id="sentiment-desc" class="mt-2 text-sm text-gray-500 dark:text-gray-400 italic"></p>
+                </div>
+                
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3 p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">📰</span>
+                            <p class="font-medium text-lg dark:text-gray-300">Fake News Probability</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="fake-news-score" class="font-bold text-lg text-violet-600 dark:text-violet-400 mr-2">-</span>
+                            <span id="fake-news-rating" class="text-sm px-2 py-1 rounded-full"></span>
+                        </div>
+                    </div>
+                    <div class="score-bar">
+                        <div id="fake-news-bar" class="score-fill bg-yellow-500" style="width: 0%"></div>
+                    </div>
+                    <p id="fake-news-desc" class="mt-2 text-sm text-gray-500 dark:text-gray-400 italic"></p>
+                </div>
+                
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3 p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full">🎯</span>
+                            <p class="font-medium text-lg dark:text-gray-300">Clickbait Detection</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="clickbait-score" class="font-bold text-lg text-violet-600 dark:text-violet-400 mr-2">-</span>
+                            <span id="clickbait-rating" class="text-sm px-2 py-1 rounded-full"></span>
+                        </div>
+                    </div>
+                    <div class="score-bar">
+                        <div id="clickbait-bar" class="score-fill bg-orange-500" style="width: 0%"></div>
+                    </div>
+                    <p id="clickbait-desc" class="mt-2 text-sm text-gray-500 dark:text-gray-400 italic"></p>
+                </div>
+                
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3 p-2 bg-red-100 dark:bg-red-900/30 rounded-full">🚫</span>
+                            <p class="font-medium text-lg dark:text-gray-300">Content Safety (NSFW)</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span id="nsfw-score" class="font-bold text-lg text-violet-600 dark:text-violet-400 mr-2">-</span>
+                            <span id="nsfw-rating" class="text-sm px-2 py-1 rounded-full"></span>
+                        </div>
+                    </div>
+                    <div class="score-bar">
+                        <div id="nsfw-bar" class="score-fill bg-red-500" style="width: 0%"></div>
+                    </div>
+                    <p id="nsfw-desc" class="mt-2 text-sm text-gray-500 dark:text-gray-400 italic"></p>
+                </div>
+            </div>
+            <div class="mt-8 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-lg border border-violet-200 dark:border-violet-800">
+                <p class="text-violet-700 dark:text-violet-400 font-medium flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Overall Content Quality Assessment
+                </p>
+                <p id="overall-assessment" class="mt-2 text-gray-600 dark:text-gray-300">Analysis will appear here after search.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Bot Widget -->
+    <div id="chat-widget" class="fixed bottom-6 right-6 z-50">
+        <!-- Chat Button -->
+        <button id="chat-button" class="bg-violet-600 hover:bg-violet-700 text-white rounded-full p-4 shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-opacity-50">
+            <svg id="chat-open-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+            <svg id="chat-close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <!-- Chat Box -->
+        <div id="chat-box" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-violet-200 dark:border-violet-800 w-80 sm:w-96 h-[450px] mb-4 flex flex-col transition-all duration-300 transform origin-bottom-right">
+            <!-- Chat Header -->
+            <div class="bg-violet-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-medium">AI Content Assistant</h3>
+                </div>
+                <div class="flex gap-2">
+                    <button id="chat-minimize" class="hover:bg-violet-500 p-1 rounded">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="flex items-start">
+                    <div class="bg-violet-100 dark:bg-violet-900/30 text-gray-800 dark:text-gray-200 rounded-lg py-2 px-4 max-w-[80%]">
+                        <p>Hi there! I'm your content assistant. Ask me anything about web content ratings, our analysis methods, or how our system works!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="border-t border-gray-200 dark:border-gray-700 p-4">
+                <form id="chat-form" class="flex">
+                    <textarea id="chat-input" placeholder="Type your message..." rows="1" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-l-lg p-2 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white resize-none overflow-hidden"></textarea>
+                    <button type="submit" id="chat-submit-btn" class="bg-violet-600 hover:bg-violet-700 text-white rounded-r-lg px-4 py-2 transition-colors flex items-center justify-center min-w-[48px]">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-24 right-6 z-50 flex flex-col gap-2"></div>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 text-gray-500 dark:text-gray-400 mt-auto border-t border-violet-100 dark:border-violet-900">
+        © 2025 AI Website Search. All Rights Reserved.
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Theme handling
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById("theme-toggle");
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener("click", function() {
+            htmlElement.classList.toggle("dark");
+            
+            // Save theme preference
+            if (htmlElement.classList.contains("dark")) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('light', 'light');
+            }
+        });
+
+        // Generate search history chips
+        function renderSearchHistory() {
+            const searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            const container = document.getElementById('recent-searches');
+            container.innerHTML = searchHistory.length ? '<p class="w-full text-sm text-gray-500 dark:text-gray-400 mb-2">Recent searches:</p>' : '';
+            
+            searchHistory.slice(0, 5).forEach(query => {
+                const chip = document.createElement('button');
+                chip.className = 'history-chip py-1 px-3 rounded-full text-sm text-violet-700 dark:text-violet-300 hover:shadow-sm';
+                chip.textContent = query;
+                chip.addEventListener('click', () => {
+                    document.getElementById('search-input').value = query;
+                    document.getElementById('search-form').dispatchEvent(new Event('submit'));
+                });
+                container.appendChild(chip);
+            });
+        }
+        
+        // Save search to history
+        function saveToSearchHistory(query) {
+            const searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            // Remove if exists, then add to front
+            const filteredHistory = searchHistory.filter(item => item !== query);
+            filteredHistory.unshift(query);
+            localStorage.setItem('searchHistory', JSON.stringify(filteredHistory.slice(0, 10)));
+            renderSearchHistory();
+        }
+        
+        // Initialize history on load
+        renderSearchHistory();
+        
+        // Setup search input animations
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('focus', () => searchInput.classList.add('search-input-focus'));
+        searchInput.addEventListener('blur', () => searchInput.classList.remove('search-input-focus'));
+
+        let searchCache = {};
+
+        document.getElementById("search-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const query = document.getElementById("search-input").value.trim();
+            if (!query) return;
+
+            // Check Cache First
+            if (searchCache[query]) {
+                displayResults(searchCache[query]);
+                saveToSearchHistory(query);
+                return;
+            }
+
+            // Show loading spinner
+            document.getElementById("loading").classList.remove("hidden");
+            
+            // Simulate progress for better UX
+            const progressBar = document.getElementById("progress-bar");
+            progressBar.style.width = "0%";
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + "%";
+            }, 200);
+
+            try {
+                // Fetch search results
+                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                // Complete the progress animation
+                clearInterval(progressInterval);
+                progressBar.style.width = "100%";
+                
+                setTimeout(() => {
+                    // Hide loading spinner after progress completes
+                    document.getElementById("loading").classList.add("hidden");
+                    
+                    // Store in Cache and display
+                    searchCache[query] = data;
+                    saveToSearchHistory(query);
+                    displayResults(data);
+                }, 500);
+                
+            } catch (error) {
+                clearInterval(progressInterval);
+                document.getElementById("loading").classList.add("hidden");
+                alert("Sorry, there was an error processing your request.");
+            }
+        });
+
+        function displayResults(data) {
+            if (data.results && data.results.length > 0) {
+                document.getElementById("results-section").classList.remove("hidden");
+                const resultsContainer = document.getElementById("results-container");
+                resultsContainer.innerHTML = "";
+
+                data.results.forEach(result => {
+                    // Skip if URL is just "#" (no results found)
+                    if (result.url === "#") {
+                        resultsContainer.innerHTML = `
+                            <div class="col-span-full text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-violet-100 dark:border-violet-900">
+                                <svg class="w-16 h-16 text-violet-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">No results found</h3>
+                                <p class="text-gray-500 dark:text-gray-400 mt-2">Try a different search term or check your spelling</p>
+                                <button onclick="document.getElementById('search-input').focus();" class="mt-4 px-4 py-2 bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 rounded-md hover:bg-violet-200 dark:hover:bg-violet-800 transition-colors">
+                                    Try another search
+                                </button>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Improve the website card
+                    const domain = new URL(result.url).hostname.replace('www.', '');
+                    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                    
+                    resultsContainer.innerHTML += `
+                        <a href="${result.url}" target="_blank" class="result-card bg-white dark:bg-gray-800 shadow-md p-6 rounded-lg flex flex-col hover:shadow-lg transition-theme">
+                            <div class="flex items-start mb-3">
+                                <img src="${favicon}" alt="${domain} favicon" class="w-6 h-6 mr-3 rounded" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%238b5cf6%22 stroke-width=%222%22><rect width=%2220%22 height=%2220%22 x=%222%22 y=%222%22 rx=%224%22/><path d=%22M12 8v8M8 12h8%22/></svg>';">
+                                <h3 class="text-lg font-semibold text-violet-600 dark:text-violet-400">${result.name}</h3>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">${domain}</p>
+                            <div class="mt-auto flex items-center justify-between">
+                                <div class="flex text-amber-500 dark:text-amber-400">
+                                    ${"⭐".repeat(Math.round(result.rating))}
+                                </div>
+                                <span class="text-sm py-1 px-2 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full">${result.rating}/5</span>
+                            </div>
+                        </a>
+                    `;
+                });
+            }
+
+            // Show and enhance analysis section
+            document.getElementById("analysis-section").classList.remove("hidden");
+            
+            // Update score text and bars
+            const analysis = data.analysis;
+            
+            // Sentiment score
+            const sentimentScore = parseFloat(analysis.sentiment_score);
+            document.getElementById("sentiment-score").textContent = sentimentScore + "/5";
+            setTimeout(() => {
+                document.getElementById("sentiment-bar").style.width = (sentimentScore / 5 * 100) + "%";
+            }, 100);
+            
+            // Add rating badges and descriptions
+            const sentimentRating = document.getElementById("sentiment-rating");
+            if (sentimentScore >= 4) {
+                sentimentRating.textContent = "Positive";
+                sentimentRating.className = "text-sm px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400";
+                document.getElementById("sentiment-desc").textContent = "The content related to this topic has a positive sentiment.";
+            } else if (sentimentScore >= 3) {
+                sentimentRating.textContent = "Neutral";
+                sentimentRating.className = "text-sm px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300";
+                document.getElementById("sentiment-desc").textContent = "The content has a relatively neutral sentiment.";
+            } else {
+                sentimentRating.textContent = "Negative";
+                sentimentRating.className = "text-sm px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400";
+                document.getElementById("sentiment-desc").textContent = "The content may have a negative sentiment or tone.";
+            }
+            
+            // Fake news score
+            const fakeNewsScore = parseFloat(analysis.fake_news_score);
+            document.getElementById("fake-news-score").textContent = fakeNewsScore + "/5";
+            setTimeout(() => {
+                document.getElementById("fake-news-bar").style.width = (fakeNewsScore / 5 * 100) + "%";
+            }, 200);
+            
+            const fakeNewsRating = document.getElementById("fake-news-rating");
+            if (fakeNewsScore >= 4) {
+                fakeNewsRating.textContent = "High Risk";
+                fakeNewsRating.className = "text-sm px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400";
+                document.getElementById("fake-news-desc").textContent = "High probability of containing misleading information.";
+            } else if (fakeNewsScore >= 2.5) {
+                fakeNewsRating.textContent = "Moderate";
+                fakeNewsRating.className = "text-sm px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400";
+                document.getElementById("fake-news-desc").textContent = "Some content may be misleading - verify with trusted sources.";
+            } else {
+                fakeNewsRating.textContent = "Low Risk";
+                fakeNewsRating.className = "text-sm px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400";
+                document.getElementById("fake-news-desc").textContent = "Content generally appears to be factual and reliable.";
+            }
+            
+            // Clickbait score
+            const clickbaitScore = parseFloat(analysis.clickbait_score);
+            document.getElementById("clickbait-score").textContent = clickbaitScore + "/5";
+            setTimeout(() => {
+                document.getElementById("clickbait-bar").style.width = (clickbaitScore / 5 * 100) + "%";
+            }, 300);
+            
+            const clickbaitRating = document.getElementById("clickbait-rating");
+            if (clickbaitScore >= 4) {
+                clickbaitRating.textContent = "High";
+                clickbaitRating.className = "text-sm px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400";
+                document.getElementById("clickbait-desc").textContent = "Content likely contains clickbait tactics to attract attention.";
+            } else if (clickbaitScore >= 2.5) {
+                clickbaitRating.textContent = "Moderate";
+                clickbaitRating.className = "text-sm px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400";
+                document.getElementById("clickbait-desc").textContent = "Some clickbait elements may be present in related content.";
+            } else {
+                clickbaitRating.textContent = "Low";
+                clickbaitRating.className = "text-sm px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400";
+                document.getElementById("clickbait-desc").textContent = "Content generally avoids misleading clickbait tactics.";
+            }
+            
+            // NSFW score
+            const nsfwScore = parseFloat(analysis.nsfw_score);
+            document.getElementById("nsfw-score").textContent = nsfwScore + "/5";
+            setTimeout(() => {
+                document.getElementById("nsfw-bar").style.width = (nsfwScore / 5 * 100) + "%";
+            }, 400);
+            
+            const nsfwRating = document.getElementById("nsfw-rating");
+            if (nsfwScore >= 4) {
+                nsfwRating.textContent = "High";
+                nsfwRating.className = "text-sm px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400";
+                document.getElementById("nsfw-desc").textContent = "Content may contain age-inappropriate material.";
+            } else if (nsfwScore >= 2.5) {
+                nsfwRating.textContent = "Moderate";
+                nsfwRating.className = "text-sm px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400";
+                document.getElementById("nsfw-desc").textContent = "Some content may be inappropriate - viewer discretion advised.";
+            } else {
+                nsfwRating.textContent = "Safe";
+                nsfwRating.className = "text-sm px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400";
+                document.getElementById("nsfw-desc").textContent = "Content appears to be appropriate for general audiences.";
+            }
+            
+            // Overall assessment
+            const avgScore = (5 - fakeNewsScore + 5 - clickbaitScore + 5 - nsfwScore + sentimentScore) / 4;
+            let assessment = "";
+            
+            if (avgScore >= 4) {
+                assessment = "This content appears to be high quality, trustworthy, and appropriate for most audiences. The sentiment is positive, with low risk of misinformation or inappropriate content.";
+            } else if (avgScore >= 3) {
+                assessment = "This content is generally reliable but may contain some elements to be aware of. We recommend verifying information with trusted sources when appropriate.";
+            } else {
+                assessment = "This content shows some quality concerns. It may contain misleading information, clickbait tactics, or potentially inappropriate material. We recommend caution.";
+            }
+            
+            document.getElementById("overall-assessment").textContent = assessment;
+        }
+        
+        // Chat Widget Functionality
+        (function() {
+            const chatButton = document.getElementById('chat-button');
+            const chatBox = document.getElementById('chat-box');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatSubmitBtn = document.getElementById('chat-submit-btn');
+            const chatOpenIcon = document.getElementById('chat-open-icon');
+            const chatCloseIcon = document.getElementById('chat-close-icon');
+            const chatMinimize = document.getElementById('chat-minimize');
+            
+            // Keep track of UI state
+            let isProcessing = false;
+            
+            // Auto-resize textarea as user types
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                if (this.scrollHeight > 150) {
+                    this.style.overflowY = 'auto';
+                } else {
+                    this.style.overflowY = 'hidden';
+                }
+            });
+            
+            // Toggle chat box
+            chatButton.addEventListener('click', () => {
+                chatBox.classList.toggle('hidden');
+                chatOpenIcon.classList.toggle('hidden');
+                chatCloseIcon.classList.toggle('hidden');
+                
+                // Scroll to bottom of messages
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Focus input when opening
+                if (!chatBox.classList.contains('hidden')) {
+                    chatInput.focus();
+                }
+            });
+            
+            // Minimize chat
+            chatMinimize.addEventListener('click', () => {
+                chatBox.classList.add('hidden');
+                chatOpenIcon.classList.remove('hidden');
+                chatCloseIcon.classList.add('hidden');
+            });
+            
+            // Show toast notification
+            const showToast = (message, type = 'info') => {
+                const toast = document.createElement('div');
+                toast.className = `px-4 py-2 rounded-lg shadow-lg text-white text-sm flex items-center ${
+                    type === 'error' ? 'bg-red-500' : 
+                    type === 'success' ? 'bg-green-500' : 
+                    'bg-violet-600'
+                } transform transition-all duration-300 opacity-0 translate-y-2`;
+                
+                const icon = document.createElement('span');
+                icon.className = 'mr-2';
+                icon.innerHTML = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+                
+                toast.appendChild(icon);
+                toast.appendChild(document.createTextNode(message));
+                
+                document.getElementById('toast-container').appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.classList.remove('opacity-0', 'translate-y-2');
+                }, 10);
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 300);
+                }, 5000);
+            };
+            
+            // Format the current time
+            function getCurrentTime() {
+                const now = new Date();
+                return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // Send message using the backend API
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const message = chatInput.value.trim();
+                if (!message || isProcessing) return;
+                
+                // Set processing state
+                isProcessing = true;
+                
+                // Disable submit button and show loading state
+                chatSubmitBtn.disabled = true;
+                const originalBtnHTML = chatSubmitBtn.innerHTML;
+                chatSubmitBtn.innerHTML = `
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                `;
+                
+                // Append user message
+                appendUserMessage(message);
+                
+                // Clear input and reset height
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+                
+                // Show typing indicator
+                const typingIndicator = appendTypingIndicator();
+                
+                try {
+                    // Call backend API
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message }),
+                        // Set timeout to prevent hanging requests
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    
+                    // Remove typing indicator
+                    typingIndicator.remove();
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server responded with status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Process successful response
+                    if (data.status === 'success' && data.message) {
+                        // Add bot response with typing effect
+                        appendBotResponse(data.message);
+                    } else if (data.message) {
+                        // Handle error with message
+                        appendBotResponse(data.message);
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                    
+                } catch (error) {
+                    console.error('Chat error:', error);
+                    
+                    // Remove typing indicator if it exists
+                    if (typingIndicator && typingIndicator.parentNode) {
+                        typingIndicator.remove();
+                    }
+                    
+                    // Show appropriate error message
+                    let errorMessage = "I'm having trouble connecting right now. Please try again.";
+                    
+                    if (error.name === 'AbortError') {
+                        errorMessage = "The request took too long. Please try again with a simpler question.";
+                    } else if (!navigator.onLine) {
+                        errorMessage = "You appear to be offline. Please check your internet connection.";
+                    }
+                    
+                    appendErrorMessage(errorMessage);
+                    showToast(errorMessage, 'error');
+                    
+                } finally {
+                    // Reset UI state
+                    isProcessing = false;
+                    chatSubmitBtn.disabled = false;
+                    chatSubmitBtn.innerHTML = originalBtnHTML;
+                }
+            });
+            
+            // Append user message with time
+            function appendUserMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex items-end justify-end';
+                
+                const time = getCurrentTime();
+                
+                messageDiv.innerHTML = `
+                    <div class="flex flex-col items-end">
+                        <div class="bg-violet-600 text-white rounded-lg py-2 px-4 max-w-[80%] break-words">
+                            <p>${escapeHTML(text)}</p>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 mr-1">${time}</span>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Append bot response with typing effect and time
+            function appendBotResponse(text, withTypingEffect = true) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex items-start';
+                
+                const time = getCurrentTime();
+                
+                // Create the message structure
+                messageDiv.innerHTML = `
+                    <div class="flex flex-col">
+                        <div class="bg-violet-100 dark:bg-violet-900/30 text-gray-800 dark:text-gray-200 rounded-lg py-2 px-4 max-w-[80%] break-words">
+                            <p id="bot-response-text"></p>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-1">${time}</span>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                
+                const responseText = messageDiv.querySelector('#bot-response-text');
+                
+                if (withTypingEffect) {
+                    // Use a more reliable typing effect
+                    const fullText = text;
+                    let index = 0;
+                    let fullTextDisplayed = false;
+                    
+                    function typeNextChar() {
+                        if (index < fullText.length) {
+                            // Display progressively more characters
+                            responseText.innerHTML = escapeHTML(fullText.substring(0, index + 1));
+                            index++;
+                            
+                            // Scroll to bottom as text appears
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            
+                            // Adjust timing based on the character
+                            const char = fullText[index - 1];
+                            const delay = getTypingDelay(char);
+                            
+                            if (responseText.isConnected) { // Only continue if element is still in DOM
+                                setTimeout(typeNextChar, delay);
+                            } else {
+                                // If element was removed, make sure we display the full text
+                                fullTextDisplayed = true;
+                            }
+                        } else {
+                            // Text is fully typed
+                            fullTextDisplayed = true;
+                        }
+                    }
+                    
+                    // Start typing
+                    typeNextChar();
+                    
+                    // Safety timeout - ensure the full message is shown within 10 seconds even if typing animation fails
+                    setTimeout(() => {
+                        if (!fullTextDisplayed && responseText.isConnected) {
+                            responseText.innerHTML = escapeHTML(fullText);
+                        }
+                    }, 10000);
+                    
+                } else {
+                    // Display the text immediately without typing effect
+                    responseText.innerHTML = escapeHTML(text);
+                }
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Get appropriate delay for typing effect based on character
+            function getTypingDelay(char) {
+                if (['.', '!', '?', '\n'].includes(char)) {
+                    return 400; // Longer pause at end of sentences  
+                } else if ([',', ';', ':'].includes(char)) {
+                    return 200; // Medium pause at punctuation
+                } else {
+                    return 30 + Math.random() * 30; // Variable typing speed
+                }
+            }
+            
+            // Append error message with retry button
+            function appendErrorMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex items-start';
+                
+                const time = getCurrentTime();
+                
+                messageDiv.innerHTML = `
+                    <div class="flex flex-col">
+                        <div class="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-lg py-2 px-4 max-w-[80%]">
+                            <p class="mb-2">${escapeHTML(text)}</p>
+                            <button class="retry-button px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded">Try Again</button>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-1">${time}</span>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Add retry functionality
+                const retryButton = messageDiv.querySelector('.retry-button');
+                retryButton.addEventListener('click', () => {
+                    // Get the last user message if any
+                    const userMessages = chatMessages.querySelectorAll('.flex.items-end.justify-end');
+                    if (userMessages.length > 0) {
+                        const lastUserMessage = userMessages[userMessages.length - 1];
+                        const lastText = lastUserMessage.querySelector('p').textContent;
+                        
+                        // Set the input value to the last message
+                        chatInput.value = lastText;
+                        
+                        // Remove the error message
+                        messageDiv.remove();
+                        
+                        // Submit the form
+                        chatForm.dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+            
+            // Append typing indicator
+            function appendTypingIndicator() {
+                const indicatorDiv = document.createElement('div');
+                indicatorDiv.className = 'flex items-start typing-indicator-container';
+                
+                indicatorDiv.innerHTML = `
+                    <div class="bg-violet-100 dark:bg-violet-900/30 rounded-lg py-2 px-4">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(indicatorDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                return indicatorDiv;
+            }
+            
+            // Function to escape HTML to prevent XSS
+            function escapeHTML(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Add typing indicator style
+            const style = document.createElement('style');
+            style.textContent = `
+                .typing-indicator {
+                    display: flex;
+                    align-items: center;
+                }
+                .typing-indicator span {
+                    height: 8px;
+                    width: 8px;
+                    background-color: #8b5cf6;
+                    border-radius: 50%;
+                    display: inline-block;
+                    margin: 0 2px;
+                }
+                .dark .typing-indicator span {
+                    background-color: #a78bfa;
+                }
+                .typing-indicator span:nth-child(1) {
+                    animation: typing-bounce 1.5s infinite ease-in-out;
+                }
+                .typing-indicator span:nth-child(2) {
+                    animation: typing-bounce 1.5s infinite ease-in-out 0.2s;
+                }
+                .typing-indicator span:nth-child(3) {
+                    animation: typing-bounce 1.5s infinite ease-in-out 0.4s;
+                }
+                @keyframes typing-bounce {
+                    0%, 80%, 100% { transform: translateY(0); }
+                    40% { transform: translateY(-8px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Handle Enter key (send message) and Shift+Enter (new line)
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

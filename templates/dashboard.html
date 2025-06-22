@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard - Adaptive Content Rating</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8b5cf6', // violet-500
+                        secondary: '#f97316', // Orange-500
+                        tertiary: '#0ea5e9', // Sky-500
+                        accent: '#ec4899', // Pink-500
+                        dark: '#111827',
+                        violet: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Include Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Smooth transitions for theme change */
+        .transition-theme {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Animated underline for navigation */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #8b5cf6; /* violet-500 */
+            transition: width 0.3s ease;
+        }
+        
+        .dark .nav-link::after {
+            background-color: #c4b5fd; /* violet-300 */
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Dashboard card hover effects */
+        .dashboard-card {
+            transition: all 0.2s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.2);
+        }
+        
+        /* Stat counter animation */
+        @property --num {
+            syntax: "<integer>";
+            initial-value: 0;
+            inherits: false;
+        }
+        
+        .stat-counter {
+            animation: counter 2s forwards;
+            counter-reset: num var(--num);
+        }
+        
+        .stat-counter::after {
+            content: counter(num);
+        }
+        
+        @keyframes counter {
+            from {
+                --num: 0;
+            }
+            to {
+                --num: attr(data-value integer);
+            }
+        }
+    </style>
+</head>
+<body class="bg-violet-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 transition-theme min-h-screen flex flex-col">
+    <!-- Header with Violet Theme -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md py-4 transition-theme border-b border-violet-200 dark:border-violet-900 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center px-4">
+            <h1 class="text-2xl font-bold text-violet-600 dark:text-violet-400 flex items-center">
+                <span class="text-3xl mr-2">📊</span> Adaptive Content Rating
+            </h1>
+            <div class="flex items-center gap-6">
+                <a href="/home" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Home</a>
+                <a href="/search" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Search</a>
+                <a href="/dashboard" class="nav-link text-violet-600 dark:text-violet-400 transition-theme font-medium border-b-2 border-violet-500">Dashboard</a>
+                <a href="/about" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">About</a>
+                <a href="/faq" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">FAQ</a>
+                <button id="theme-toggle" class="p-2 rounded-full bg-violet-100 dark:bg-violet-900 hover:bg-violet-200 dark:hover:bg-violet-800 transition-theme">
+                    <svg id="sun-icon" class="w-5 h-5 text-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
+                    </svg>
+                    <svg id="moon-icon" class="w-5 h-5 text-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <section class="bg-gradient-to-r from-violet-600 to-violet-900 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Your Dashboard</h1>
+            <p class="text-lg text-violet-200">Track your search activity and content analysis insights</p>
+        </div>
+    </section>
+
+    <!-- Stats Overview -->
+    <section class="py-10">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Stat Card 1 -->
+                <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Total Searches</p>
+                            <h3 class="text-3xl font-bold text-violet-600 dark:text-violet-400 mt-1">
+                                <span data-value="{{ search_history|length }}" class="stat-counter">{{ search_history|length }}</span>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                            <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="text-green-500">↑ 12%</span> since last week
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Stat Card 2 -->
+                <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Websites Analyzed</p>
+                            <h3 class="text-3xl font-bold text-violet-600 dark:text-violet-400 mt-1">
+                                <span data-value="{{ 25 }}" class="stat-counter">25</span>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                            <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="text-green-500">↑ 8%</span> since last week
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Stat Card 3 -->
+                <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Avg. Sentiment</p>
+                            <h3 class="text-3xl font-bold text-violet-600 dark:text-violet-400 mt-1">3.8</h3>
+                        </div>
+                        <div class="p-3 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                            <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="text-green-500">↑ 0.2</span> since last week
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Stat Card 4 -->
+                <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Content Safety</p>
+                            <h3 class="text-3xl font-bold text-violet-600 dark:text-violet-400 mt-1">92%</h3>
+                        </div>
+                        <div class="p-3 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                            <svg class="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="text-green-500">↑ 3%</span> since last week
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts & Insights Section -->
+    <section class="py-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Sentiment Distribution Chart -->
+                <div class="col-span-2 dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Content Analysis Metrics</h3>
+                    <div class="h-64">
+                        <canvas id="analysisChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Searches -->
+                <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Recent Searches</h3>
+                    <div class="space-y-3">
+                        {% for search in search_history[:5] %}
+                        <div class="flex items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                            <div class="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-md mr-3">
+                                <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 truncate">
+                                <p class="text-gray-700 dark:text-gray-300 truncate">{{ search }}</p>
+                            </div>
+                            <a href="/search?query={{ search }}" class="text-violet-500 hover:text-violet-600 dark:hover:text-violet-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                </svg>
+                            </a>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if search_history|length == 0 %}
+                        <div class="text-center py-4">
+                            <p class="text-gray-500 dark:text-gray-400">No search history yet</p>
+                            <a href="/search" class="text-violet-500 hover:text-violet-600 dark:hover:text-violet-400 mt-2 inline-block">Try searching</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Content Analysis -->
+            <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-violet-100 dark:border-violet-900">
+                <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Recent Content Analysis</h3>
+                
+                {% if analyses|length > 0 %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Query</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sentiment</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fake News</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Clickbait</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">NSFW</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Websites</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            {% for analysis in analyses %}
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="text-gray-700 dark:text-gray-300">{{ analysis.query }}</span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {% if analysis.sentiment >= 4 %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        {% elif analysis.sentiment >= 3 %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                                        {% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400{% endif %}
+                                    ">
+                                        {{ analysis.sentiment }}/5
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {% if analysis.fake_news < 2.5 %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        {% elif analysis.fake_news < 4 %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
+                                        {% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400{% endif %}
+                                    ">
+                                        {{ analysis.fake_news }}/5
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {% if analysis.clickbait < 2.5 %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        {% elif analysis.clickbait < 4 %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
+                                        {% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400{% endif %}
+                                    ">
+                                        {{ analysis.clickbait }}/5
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {% if analysis.nsfw < 2.5 %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        {% elif analysis.nsfw < 4 %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
+                                        {% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400{% endif %}
+                                    ">
+                                        {{ analysis.nsfw }}/5
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="text-gray-700 dark:text-gray-300">{{ analysis.websites }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-500 dark:text-gray-400">No analysis data available yet</p>
+                    <a href="/search" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-violet-600 hover:bg-violet-700 focus:outline-none">
+                        Start Searching
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 py-8 text-center text-gray-600 dark:text-gray-400 transition-theme border-t border-violet-200 dark:border-violet-900 mt-auto">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>© 2025 Adaptive Content Rating System. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Theme handling
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById("theme-toggle");
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener("click", function() {
+            htmlElement.classList.toggle("dark");
+            
+            // Save theme preference
+            if (htmlElement.classList.contains("dark")) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Chart initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get theme colors based on current theme
+            const isDarkMode = htmlElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#f3f4f6' : '#111827';
+            const borderColor = isDarkMode ? '#4c1d95' : '#c4b5fd';
+            
+            // Analytics chart
+            const ctx = document.getElementById('analysisChart').getContext('2d');
+            
+            // Sample data for the chart
+            const analysisChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Positive Sentiment', 'Low Fake News', 'Low Clickbait', 'Safe Content'],
+                    datasets: [{
+                        label: 'Average Score (out of 5)',
+                        data: [3.8, 2.1, 2.3, 1.5],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.6)', // Green
+                            'rgba(245, 158, 11, 0.6)', // Yellow
+                            'rgba(249, 115, 22, 0.6)', // Orange
+                            'rgba(139, 92, 246, 0.6)'  // Violet
+                        ],
+                        borderColor: [
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(249, 115, 22, 1)',
+                            'rgba(139, 92, 246, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update chart when theme changes
+            themeToggle.addEventListener('click', function() {
+                const isDark = htmlElement.classList.contains('dark');
+                
+                // Update colors
+                analysisChart.options.scales.y.ticks.color = isDark ? '#f3f4f6' : '#111827';
+                analysisChart.options.scales.x.ticks.color = isDark ? '#f3f4f6' : '#111827';
+                analysisChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                analysisChart.options.scales.x.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                analysisChart.options.plugins.legend.labels.color = isDark ? '#f3f4f6' : '#111827';
+                
+                // Update chart
+                analysisChart.update();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About - Adaptive Content Rating</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8b5cf6', // violet-500
+                        secondary: '#f97316', // Orange-500
+                        tertiary: '#0ea5e9', // Sky-500
+                        accent: '#ec4899', // Pink-500
+                        dark: '#111827',
+                        violet: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Smooth transitions for theme change */
+        .transition-theme {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Animated underline for navigation */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #8b5cf6; /* violet-500 */
+            transition: width 0.3s ease;
+        }
+        
+        .dark .nav-link::after {
+            background-color: #c4b5fd; /* violet-300 */
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Team member card hover effect */
+        .team-card {
+            transition: all 0.3s ease;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.2);
+        }
+        
+        /* Timeline design */
+        .timeline {
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background-color: #ddd6fe;
+        }
+        
+        .dark .timeline::before {
+            background-color: #5b21b6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 3rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1.5rem;
+            height: 1.5rem;
+            background-color: #8b5cf6;
+            border-radius: 50%;
+            border: 4px solid white;
+        }
+        
+        .dark .timeline-item::before {
+            border-color: #1f2937;
+        }
+    </style>
+</head>
+<body class="bg-violet-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 transition-theme min-h-screen flex flex-col">
+    <!-- Header with Violet Theme -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md py-4 transition-theme border-b border-violet-200 dark:border-violet-900 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center px-4">
+            <h1 class="text-2xl font-bold text-violet-600 dark:text-violet-400 flex items-center">
+                <span class="text-3xl mr-2">📊</span> Adaptive Content Rating
+            </h1>
+            <div class="flex items-center gap-6">
+                <a href="/home" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Home</a>
+                <a href="/search" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Search</a>
+                <a href="/dashboard" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">Dashboard</a>
+                <a href="/about" class="nav-link text-violet-600 dark:text-violet-400 transition-theme font-medium border-b-2 border-violet-500">About</a>
+                <a href="/faq" class="nav-link text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 transition-theme font-medium">FAQ</a>
+                <button id="theme-toggle" class="p-2 rounded-full bg-violet-100 dark:bg-violet-900 hover:bg-violet-200 dark:hover:bg-violet-800 transition-theme">
+                    <svg id="sun-icon" class="w-5 h-5 text-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
+                    </svg>
+                    <svg id="moon-icon" class="w-5 h-5 text-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-violet-600 to-violet-900 text-white py-20">
+        <div class="max-w-5xl mx-auto text-center px-4">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">About Our Project</h1>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">Learn about our mission, technology, and the team behind the Adaptive Content Rating System.</p>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="py-16 bg-white dark:bg-gray-800">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8 text-center text-violet-700 dark:text-violet-400">Our Mission</h2>
+            <div class="bg-gradient-to-br from-violet-50 to-white dark:from-gray-800 dark:to-gray-900 p-8 rounded-lg shadow-lg border border-violet-100 dark:border-violet-900">
+                <p class="text-lg mb-6 text-gray-700 dark:text-gray-300 leading-relaxed">
+                    Our mission is to make the web a more personalized and safer place by providing intelligent content recommendations that adapt to each user's unique context and needs.
+                </p>
+                <p class="text-lg mb-6 text-gray-700 dark:text-gray-300 leading-relaxed">
+                    In today's digital landscape, the explosion of online content has made finding relevant, high-quality information increasingly challenging. Our adaptive content rating system uses advanced AI to analyze web content across multiple dimensions - evaluating sentiment, detecting misinformation, identifying clickbait, and ensuring content safety.
+                </p>
+                <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                    By considering contextual factors like location, device, time, and user activity, we deliver personalized recommendations that are not only relevant but timely and appropriate for each unique situation.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section class="py-16 bg-violet-50 dark:bg-gray-900">
+        <div class="max-w-5xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-violet-700 dark:text-violet-400">Our Technology</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-violet-100 dark:border-violet-900 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-violet-600 dark:text-violet-400">AI-Powered Analysis</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                        Our system leverages state-of-the-art natural language processing and machine learning algorithms to analyze web content at multiple levels:
+                    </p>
+                    <ul class="space-y-3 text-gray-700 dark:text-gray-300 mb-6">
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Sentiment analysis to gauge emotional tone</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Fake news detection to identify misinformation</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Clickbait identification to filter misleading headlines</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Content safety scoring to flag inappropriate material</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-violet-100 dark:border-violet-900 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-violet-600 dark:text-violet-400">Contextual Awareness</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                        Unlike traditional recommendation systems, our platform considers various contextual factors to deliver truly personalized content:
+                    </p>
+                    <ul class="space-y-3 text-gray-700 dark:text-gray-300">
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Device detection for optimized content presentation</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Geographic location for culturally relevant recommendations</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>Time-based insights to match current relevance</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-violet-500 mr-2">✓</span> 
+                            <span>User activity patterns for behavior-aware suggestions</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer with Violet Accents -->
+    <footer class="bg-white dark:bg-gray-800 py-8 text-center text-gray-600 dark:text-gray-400 transition-theme border-t border-violet-200 dark:border-violet-900">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>© 2025 Adaptive Content Rating System. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Theme handling
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById("theme-toggle");
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener("click", function() {
+            htmlElement.classList.toggle("dark");
+            
+            // Save theme preference
+            if (htmlElement.classList.contains("dark")) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+</body>
+</html>
